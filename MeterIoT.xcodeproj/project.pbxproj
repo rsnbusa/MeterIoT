@@ -55,6 +55,8 @@
 		6798219B1C9ADD79002C80E7 /* HMSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 6798219A1C9ADD79002C80E7 /* HMSegmentedControl.m */; };
 		679821A11C9B0AB7002C80E7 /* servingCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 679821A01C9B0AB7002C80E7 /* servingCell.m */; };
 		67B2E78F1C9C25D3001D0068 /* coredata.xcdatamodeld in Sources */ = {isa = PBXBuildFile; fileRef = 67B2E78D1C9C25D3001D0068 /* coredata.xcdatamodeld */; };
+		67B437A120E427CD000386CA /* Log.m in Sources */ = {isa = PBXBuildFile; fileRef = 67B4379E20E427CC000386CA /* Log.m */; };
+		67B437A520E429AC000386CA /* mlogCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 67B437A420E429AC000386CA /* mlogCell.m */; };
 		67BBC2651CA07B20004D8105 /* syncCellTableViewCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 67BBC2641CA07B20004D8105 /* syncCellTableViewCell.m */; };
 		67BD43A41D84E7B100582091 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 67BD43A31D84E7B100582091 /* Main.storyboard */; };
 		67BF8E8E1CDAF406008C6643 /* colorAvg.m in Sources */ = {isa = PBXBuildFile; fileRef = 67BF8E8D1CDAF406008C6643 /* colorAvg.m */; };
@@ -255,6 +257,10 @@
 		6798219F1C9B0AB7002C80E7 /* servingCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = servingCell.h; sourceTree = "<group>"; };
 		679821A01C9B0AB7002C80E7 /* servingCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = servingCell.m; sourceTree = "<group>"; };
 		67B2E78E1C9C25D3001D0068 /* coredata.xcdatamodel */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcdatamodel; path = coredata.xcdatamodel; sourceTree = "<group>"; };
+		67B4379D20E427CB000386CA /* Log.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Log.h; sourceTree = "<group>"; };
+		67B4379E20E427CC000386CA /* Log.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = Log.m; sourceTree = "<group>"; };
+		67B437A320E429AB000386CA /* mlogCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = mlogCell.h; sourceTree = "<group>"; };
+		67B437A420E429AC000386CA /* mlogCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mlogCell.m; sourceTree = "<group>"; };
 		67BBC2631CA07B20004D8105 /* syncCellTableViewCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = syncCellTableViewCell.h; sourceTree = "<group>"; };
 		67BBC2641CA07B20004D8105 /* syncCellTableViewCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = syncCellTableViewCell.m; sourceTree = "<group>"; };
 		67BD43A31D84E7B100582091 /* Main.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; path = Main.storyboard; sourceTree = "<group>"; };
@@ -469,6 +475,8 @@
 		672F86071D39CDEC007AF7CD /* ColorCube */ = {
 			isa = PBXGroup;
 			children = (
+				67B437A320E429AB000386CA /* mlogCell.h */,
+				67B437A420E429AC000386CA /* mlogCell.m */,
 				67BF8E8C1CDAF406008C6643 /* colorAvg.h */,
 				67BF8E8D1CDAF406008C6643 /* colorAvg.m */,
 				67BF8E971CDAF7EF008C6643 /* CCColorCube.h */,
@@ -870,6 +878,8 @@
 				678B4FB81E4C003800937301 /* infoVC.h */,
 				678B4FB91E4C003800937301 /* infoVC.m */,
 				67BD43A31D84E7B100582091 /* Main.storyboard */,
+				67B4379D20E427CB000386CA /* Log.h */,
+				67B4379E20E427CC000386CA /* Log.m */,
 				671A10491D82633200F3F97F /* MainStoryboard_iPad.storyboard */,
 				679089F51E44E6F000856C2E /* monthUseViewController.h */,
 				679089F61E44E6F000856C2E /* monthUseViewController.m */,
@@ -1097,6 +1107,7 @@
 			files = (
 				67E88B4E1E43F0EA00379702 /* DGActivityIndicatorBallClipRotateMultipleAnimation.m in Sources */,
 				67C2F6A31D1A03DA006BD9C7 /* Password.m in Sources */,
+				67B437A120E427CD000386CA /* Log.m in Sources */,
 				678B4FB71E4C002800937301 /* framVC.m in Sources */,
 				67C7A86A1D6A14B100BC06C2 /* time_mosq.c in Sources */,
 				67E88B631E43F0EA00379702 /* DGActivityIndicatorLineScalePulseOutRapidAnimation.m in Sources */,
@@ -1109,6 +1120,7 @@
 				67E88B051E43F0D300379702 /* DGActivityIndicatorView.m in Sources */,
 				67908A521E44EC0300856C2E /* RSDFDatePickerCollectionViewLayout.m in Sources */,
 				67908A811E452E3E00856C2E /* JBGradientLineLayer.m in Sources */,
+				67B437A520E429AC000386CA /* mlogCell.m in Sources */,
 				67E88B621E43F0EA00379702 /* DGActivityIndicatorLineScalePulseOutAnimation.m in Sources */,
 				72EC060317E9655300DCB9A3 /* TabBarViewController.m in Sources */,
 				6785BA521D82EA52003297E0 /* tabc.m in Sources */,
