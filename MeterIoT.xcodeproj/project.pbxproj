@@ -140,7 +140,6 @@
 		72EC05C117E8DF3D00DCB9A3 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 72EC05BF17E8DF3D00DCB9A3 /* InfoPlist.strings */; };
 		72EC05C317E8DF3D00DCB9A3 /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 72EC05C217E8DF3D00DCB9A3 /* main.m */; };
 		72EC05C717E8DF3D00DCB9A3 /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = 72EC05C617E8DF3D00DCB9A3 /* AppDelegate.m */; };
-		72EC060317E9655300DCB9A3 /* TabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 72EC060217E9655300DCB9A3 /* TabBarViewController.m */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -430,8 +429,6 @@
 		72EC05C517E8DF3D00DCB9A3 /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
 		72EC05C617E8DF3D00DCB9A3 /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
 		72EC05D717E8DF3D00DCB9A3 /* MeterIoT.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = MeterIoT.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		72EC060117E9655300DCB9A3 /* TabBarViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TabBarViewController.h; sourceTree = "<group>"; };
-		72EC060217E9655300DCB9A3 /* TabBarViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TabBarViewController.m; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -893,8 +890,6 @@
 				6791328C1D67C4AF00D448A0 /* queueEntry.m */,
 				678B4FBB1E4C0A5300937301 /* resetVC.h */,
 				678B4FBC1E4C0A5300937301 /* resetVC.m */,
-				72EC060117E9655300DCB9A3 /* TabBarViewController.h */,
-				72EC060217E9655300DCB9A3 /* TabBarViewController.m */,
 				6785BA501D82EA52003297E0 /* tabc.h */,
 				6785BA511D82EA52003297E0 /* tabc.m */,
 				676C6FE71CA5C60A009E6E04 /* TextFieldValidator.h */,
@@ -1122,7 +1117,6 @@
 				67908A811E452E3E00856C2E /* JBGradientLineLayer.m in Sources */,
 				67B437A520E429AC000386CA /* mlogCell.m in Sources */,
 				67E88B621E43F0EA00379702 /* DGActivityIndicatorLineScalePulseOutAnimation.m in Sources */,
-				72EC060317E9655300DCB9A3 /* TabBarViewController.m in Sources */,
 				6785BA521D82EA52003297E0 /* tabc.m in Sources */,
 				67908A7E1E452E3E00856C2E /* JBGradientBarView.m in Sources */,
 				6798219B1C9ADD79002C80E7 /* HMSegmentedControl.m in Sources */,
