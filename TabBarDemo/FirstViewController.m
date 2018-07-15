@@ -25,12 +25,14 @@
 #include <arpa/inet.h>
 #import <SystemConfiguration/CaptiveNetwork.h>
 #import <NetworkExtension/NEHotspotHelper.h>
+#import "AMTumblrHud.h"
 //#import <AdSupport/ASIdentifierManager.h>
 @interface FirstViewController ()
+-(void)showMensaje:(NSString*)title withMessage:(NSString*)mensaje doExit:(BOOL)salir;
 
 @end
 
-#if 1 // set to 1 to enable logs
+#if 0 // set to 1 to enable logs
 #define LogDebug(frmt, ...) NSLog([frmt stringByAppendingString:@"[%s]{%d}"], ##__VA_ARGS__,__PRETTY_FUNCTION__,__LINE__);
 #else
 #define LogDebug(frmt, ...) {}
@@ -41,16 +43,28 @@
 @synthesize host,answer,effects,petName,collect,picScroll,mqttServer,album,fotoSize,onOff,netServiceBrowser,passSW,addBut;
 id yo;
 
--(void)blurScreen
+-(void)killBill
 {
-    CGRect screenSize = [UIScreen mainScreen].bounds;
-    UIImage *screenShot = [self.view screenshot];
-    UIImage *blurImage  = [screenShot blurredImageWithRadius:10.5 iterations:2 tintColor:nil];
-    backGroundBlurr = [[UIImageView alloc]initWithImage:blurImage];
-    backGroundBlurr.frame = CGRectMake(0, 0, screenSize.size.width, screenSize.size.height);
-    [self.view addSubview:backGroundBlurr];
+    if(tumblrHUD)
+        [tumblrHUD hide];
+    [self showMensaje:@"Meter Msg" withMessage:@"Comm Timeout" doExit:NO];
 }
 
+-(void)hud
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        tumblrHUD = [[AMTumblrHud alloc] initWithFrame:CGRectMake((CGFloat) (_hhud.frame.origin.x),
+                                                                  (CGFloat) (_hhud.frame.origin.y), 55, 20)];
+        tumblrHUD.hudColor = _hhud.backgroundColor;
+        [self.view addSubview:tumblrHUD];
+        [tumblrHUD showAnimated:YES];
+       mitimer=[NSTimer scheduledTimerWithTimeInterval:10
+                                                       target:self
+                                                     selector:@selector(killBill)
+                                                     userInfo:nil
+                                                      repeats:NO];
+    });
+}
 -(void)oneTap:(id)sender
 {
 
@@ -62,15 +76,29 @@ id yo;
 
  -(void)showMensaje:(NSString*)title withMessage:(NSString*)mensaje doExit:(BOOL)salir
 {
-    [self blurScreen];
+    if(mitimer)
+        [mitimer invalidate];
+    dispatch_async(dispatch_get_main_queue(), ^{[tumblrHUD hide]; });
+
+
+
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:title
                                                                    message:mensaje
                                                             preferredStyle:UIAlertControllerStyleAlert];
-    UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+    UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault
                                                           handler:^(UIAlertAction * action) {
-                                                              [backGroundBlurr removeFromSuperview];
                                                                if (salir) exit(0);
                                                           }];
+    // add an image to the action. Should be small.
+  //  UIImage * image = [UIImage imageNamed:@"msg"];
+  //  [defaultAction setValue:image forKey:@"image"];
+
+    //add an image to the Alert itself. location and size
+//    UIImage* imgMyImage = [UIImage imageNamed:@"msg"];
+//   UIImageView* ivMyImageView = [[UIImageView alloc] initWithFrame:CGRectMake(10, 20, imgMyImage.size.width, imgMyImage.size.height)];
+//  [ivMyImageView setImage:imgMyImage];
+//    [alert.view addSubview:ivMyImageView];
+
     
     [alert addAction:defaultAction];
     [self presentViewController:alert animated:YES completion:nil];
@@ -78,14 +106,14 @@ id yo;
 
 -(void)confirmDelete
 {
-    [self blurScreen];
-    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Delete Heater"
+
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Delete Meter"
                                                                    message:[NSString stringWithFormat:@"You really want to remove %@",[appDelegate.workingBFF valueForKey:@"bffName"]]
                                                             preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
                                                           handler:^(UIAlertAction * action) {
                                                               [backGroundBlurr removeFromSuperview];
-                                                              NSString *mis=[NSString stringWithFormat:@"erase?bff=%@",
+                                                              NSString *mis=[NSString stringWithFormat:@"erase?bff=%@&password=zipo",
                                                                                 [appDelegate.workingBFF valueForKey:@"bffName"]];
                                                               [comm lsender:mis andAnswer:NULL andTimeOut:[[[NSUserDefaults standardUserDefaults]objectForKey:@"txTimeOut"] intValue]];
                                                               //return;//should be return
@@ -300,11 +328,121 @@ id yo;
     }
 }
 
+- (UIImage *)scaleAndRotateImage:(UIImage *) image {
+    int kMaxResolution = 320;
+    
+    CGImageRef imgRef = image.CGImage;
+    
+    CGFloat width = CGImageGetWidth(imgRef);
+    CGFloat height = CGImageGetHeight(imgRef);
+    
+    
+    CGAffineTransform transform = CGAffineTransformIdentity;
+    CGRect bounds = CGRectMake(0, 0, width, height);
+    if (width > kMaxResolution || height > kMaxResolution) {
+        CGFloat ratio = width/height;
+        if (ratio > 1) {
+            bounds.size.width = kMaxResolution;
+            bounds.size.height = bounds.size.width / ratio;
+        }
+        else {
+            bounds.size.height = kMaxResolution;
+            bounds.size.width = bounds.size.height * ratio;
+        }
+    }
+    
+    CGFloat scaleRatio = bounds.size.width / width;
+    CGSize imageSize = CGSizeMake(CGImageGetWidth(imgRef), CGImageGetHeight(imgRef));
+    CGFloat boundHeight;
+    UIImageOrientation orient = image.imageOrientation;
+    switch(orient) {
+            
+        case UIImageOrientationUp: //EXIF = 1
+            transform = CGAffineTransformIdentity;
+            break;
+            
+        case UIImageOrientationUpMirrored: //EXIF = 2
+            transform = CGAffineTransformMakeTranslation(imageSize.width, 0.0);
+            transform = CGAffineTransformScale(transform, -1.0, 1.0);
+            break;
+            
+        case UIImageOrientationDown: //EXIF = 3
+            transform = CGAffineTransformMakeTranslation(imageSize.width, imageSize.height);
+            transform = CGAffineTransformRotate(transform, M_PI);
+            break;
+            
+        case UIImageOrientationDownMirrored: //EXIF = 4
+            transform = CGAffineTransformMakeTranslation(0.0, imageSize.height);
+            transform = CGAffineTransformScale(transform, 1.0, -1.0);
+            break;
+            
+        case UIImageOrientationLeftMirrored: //EXIF = 5
+            boundHeight = bounds.size.height;
+            bounds.size.height = bounds.size.width;
+            bounds.size.width = boundHeight;
+            transform = CGAffineTransformMakeTranslation(imageSize.height, imageSize.width);
+            transform = CGAffineTransformScale(transform, -1.0, 1.0);
+            transform = CGAffineTransformRotate(transform, 3.0 * M_PI / 2.0);
+            break;
+            
+        case UIImageOrientationLeft: //EXIF = 6
+            boundHeight = bounds.size.height;
+            bounds.size.height = bounds.size.width;
+            bounds.size.width = boundHeight;
+            transform = CGAffineTransformMakeTranslation(0.0, imageSize.width);
+            transform = CGAffineTransformRotate(transform, 3.0 * M_PI / 2.0);
+            break;
+            
+        case UIImageOrientationRightMirrored: //EXIF = 7
+            boundHeight = bounds.size.height;
+            bounds.size.height = bounds.size.width;
+            bounds.size.width = boundHeight;
+            transform = CGAffineTransformMakeScale(-1.0, 1.0);
+            transform = CGAffineTransformRotate(transform, M_PI / 2.0);
+            break;
+            
+        case UIImageOrientationRight: //EXIF = 8
+            boundHeight = bounds.size.height;
+            bounds.size.height = bounds.size.width;
+            bounds.size.width = boundHeight;
+            transform = CGAffineTransformMakeTranslation(imageSize.height, 0.0);
+            transform = CGAffineTransformRotate(transform, M_PI / 2.0);
+            break;
+            
+        default:
+            [NSException raise:NSInternalInconsistencyException format:@"Invalid image orientation"];
+            
+    }
+    
+    UIGraphicsBeginImageContext(bounds.size);
+    
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    
+    if (orient == UIImageOrientationRight || orient == UIImageOrientationLeft) {
+        CGContextScaleCTM(context, -scaleRatio, scaleRatio);
+        CGContextTranslateCTM(context, -height, 0);
+    }
+    else {
+        CGContextScaleCTM(context, scaleRatio, -scaleRatio);
+        CGContextTranslateCTM(context, 0, -height);
+    }
+    
+    CGContextConcatCTM(context, transform);
+    
+    CGContextDrawImage(UIGraphicsGetCurrentContext(), CGRectMake(0, 0, width, height), imgRef);
+    UIImage *imageCopy = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    
+    return imageCopy;
+}
+
 - (void)imagePickerController:(UIImagePickerController *)picker didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
     //You can retrieve the actual UIImage
-    UIImage *estai = [info valueForKey:UIImagePickerControllerOriginalImage];
-    imagel=[UIImage imageWithCGImage:estai.CGImage scale:1.0 orientation:estai.imageOrientation];
+    UIImage *imagel = [self scaleAndRotateImage: [info objectForKey:UIImagePickerControllerOriginalImage]];
+ //   UIImage *imagel = [info valueForKey:UIImagePickerControllerOriginalImage];
+    
+   // imagel=[UIImage imageWithCGImage:estai.CGImage scale:1.0 orientation:estai.imageOrientation];
     // Create path.
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *final=[NSString stringWithFormat:@"%@.txt",[appDelegate.workingBFF valueForKey:@"bffName"]];//.txt hasta que tengamos webiste ue nos permita usar .png
@@ -425,7 +563,7 @@ id yo;
     appDelegate.servingsArray = [[context executeFetchRequest:request
                                                         error:&error] mutableCopy];
    // [[appDelegate.tabBarController.tabBar.items objectAtIndex:1] setBadgeValue:[NSString stringWithFormat:@"%ld",appDelegate.servingsArray.count]];
-    [[appDelegate.tabBarController.tabBar.items objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%ld",(unsigned long)appDelegate.bffs.count]];
+ //   [[appDelegate.tabBarController.tabBar.items objectAtIndex:0] setBadgeValue:[NSString stringWithFormat:@"%ld",(unsigned long)appDelegate.bffs.count]];
 
 }
 
@@ -450,117 +588,6 @@ id yo;
     petName.textColor=[appDelegate.appColors objectAtIndex:randomNumber];
     [self OnOffState:(int)[[appDelegate.workingBFF valueForKey:@"bffOnOff"] integerValue] ];
     [self getArrays];
-}
-
-
-- (UIImage *)scaleAndRotateImage:(UIImage *)image
-{
-    int kMaxResolution = 320; // Or whatever
-    return image;
-    CGImageRef imgRef = image.CGImage;
-    
-    CGFloat width = CGImageGetWidth(imgRef);
-    CGFloat height = CGImageGetHeight(imgRef);
-    
-    CGAffineTransform transform = CGAffineTransformIdentity;
-    CGRect bounds = CGRectMake(0, 0, width, height);
-    if (width > kMaxResolution || height > kMaxResolution) {
-        CGFloat ratio = width/height;
-        if (ratio > 1) {
-            bounds.size.width = kMaxResolution;
-            bounds.size.height = bounds.size.width / ratio;
-        }
-        else {
-            bounds.size.height = kMaxResolution;
-            bounds.size.width = bounds.size.height * ratio;
-        }
-    }
-    
-    CGFloat scaleRatio = bounds.size.width / width;
-    CGSize imageSize = CGSizeMake(CGImageGetWidth(imgRef), CGImageGetHeight(imgRef));
-    CGFloat boundHeight;
-    UIImageOrientation orient = image.imageOrientation;
-  //  NSLog(@"Orient %ld",(long)orient);
-    switch(orient) {
-            
-        case UIImageOrientationUp: //EXIF = 1
-            transform = CGAffineTransformIdentity;
-            break;
-            
-        case UIImageOrientationUpMirrored: //EXIF = 2
-            transform = CGAffineTransformMakeTranslation(imageSize.width, 0.0);
-            transform = CGAffineTransformScale(transform, -1.0, 1.0);
-            break;
-            
-        case UIImageOrientationDown: //EXIF = 3
-            transform = CGAffineTransformMakeTranslation(imageSize.width, imageSize.height);
-            transform = CGAffineTransformRotate(transform, M_PI);
-            break;
-            
-        case UIImageOrientationDownMirrored: //EXIF = 4
-            transform = CGAffineTransformMakeTranslation(0.0, imageSize.height);
-            transform = CGAffineTransformScale(transform, 1.0, -1.0);
-            break;
-            
-        case UIImageOrientationLeftMirrored: //EXIF = 5
-            boundHeight = bounds.size.height;
-            bounds.size.height = bounds.size.width;
-            bounds.size.width = boundHeight;
-            transform = CGAffineTransformMakeTranslation(imageSize.height, imageSize.width);
-            transform = CGAffineTransformScale(transform, -1.0, 1.0);
-            transform = CGAffineTransformRotate(transform, 3.0 * M_PI / 2.0);
-            break;
-            
-        case UIImageOrientationLeft: //EXIF = 6
-            boundHeight = bounds.size.height;
-            bounds.size.height = bounds.size.width;
-            bounds.size.width = boundHeight;
-            transform = CGAffineTransformMakeTranslation(0.0, imageSize.width);
-            transform = CGAffineTransformRotate(transform, 3.0 * M_PI / 2.0);
-            break;
-            
-        case UIImageOrientationRightMirrored: //EXIF = 7
-            boundHeight = bounds.size.height;
-            bounds.size.height = bounds.size.width;
-            bounds.size.width = boundHeight;
-            transform = CGAffineTransformMakeScale(-1.0, 1.0);
-            transform = CGAffineTransformRotate(transform, M_PI / 2.0);
-            break;
-            
-        case UIImageOrientationRight: //EXIF = 8
-            boundHeight = bounds.size.height;
-            bounds.size.height = bounds.size.width;
-            bounds.size.width = boundHeight;
-            transform = CGAffineTransformMakeTranslation(imageSize.height, 0.0);
-            transform = CGAffineTransformRotate(transform, M_PI / 2.0);
-            break;
-            
-        default:
-            [NSException raise:NSInternalInconsistencyException format:@"Invalid image orientation"];
-            
-    }
-    
-    UIGraphicsBeginImageContext(bounds.size);
-    
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    
-    if (orient == UIImageOrientationRight || orient == UIImageOrientationLeft) {
-        CGContextScaleCTM(context, -scaleRatio, scaleRatio);
-        CGContextTranslateCTM(context, -height, 0);
-    }
-    else {
-        CGContextScaleCTM(context, scaleRatio, -scaleRatio);
-        CGContextTranslateCTM(context, 0, -height);
-    }
-    
-    CGContextConcatCTM(context, transform);
-    
-    CGContextDrawImage(UIGraphicsGetCurrentContext(), CGRectMake(0, 0, width, height), imgRef);
-    UIImage *imageCopy = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    
-    return imageCopy;
-    //return imageCopy;
 }
 
 
@@ -875,7 +902,7 @@ if (!appDelegate.passwordf)
 MQTTMessageHandler aca=^(MQTTMessage *message)
 {
     LogDebug(@"Incoming msg %@ %@",message.payload,message.payloadString);
-    [yo showMensaje:@"Heater Message" withMessage:message.payloadString doExit:NO];
+    [yo showMensaje:@"Meater Message" withMessage:message.payloadString doExit:NO];
     [yo resetCallBack];
 };
 
@@ -883,11 +910,14 @@ MQTTMessageHandler aca=^(MQTTMessage *message)
 
 - (void)viewDidLoad {
   
-    [super viewDidLoad];
+    [super viewDidLoad];    
     yo=self;
     passOn =    ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)?[UIImage imageNamed:@"lockedbig.png"]:[UIImage imageNamed:@"locked.png"];
     passOff =     ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)?  [UIImage imageNamed:@"unlockedbig.png"]:[UIImage imageNamed:@"unlocked.png"];
  [[NSUserDefaults standardUserDefaults] setObject:@"mt"  forKey:@"appId"];
+    UIColor *color=[UIColor colorWithRed:0 green:143 blue:255 alpha:1];
+    NSData *colorData = [NSKeyedArchiver archivedDataWithRootObject:color];
+    [[NSUserDefaults standardUserDefaults] setObject:colorData forKey:@"myColor"];
  //     NSString  *currentDeviceId = [[[UIDevice currentDevice] identifierForVendor]UUIDString];
  //   NSString *deviceMqtt=[currentDeviceId substringFromIndex:MAX((int)[currentDeviceId length]-8, 0)]; //in case string is less than 8 characters long.
   //  [[NSUserDefaults standardUserDefaults] setObject:deviceMqtt  forKey:@"bffUID"];
@@ -908,20 +938,7 @@ MQTTMessageHandler aca=^(MQTTMessage *message)
     petName.hidden=NO;
     album.hidden=YES;
     fotoSize.transform = CGAffineTransformScale(CGAffineTransformIdentity, .75, 0.75);
-  //  if([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)
-    //    onOff.transform = CGAffineTransformScale(CGAffineTransformIdentity, 2.0, 2.0);
- //   servers=[[NSMutableArray alloc]init];
- //   ports=[[NSMutableArray alloc]init];
-//    NSString *maca= [self getMacAddress];
     mqttServer=[NSMutableString string];// blank
-//    [[NSUserDefaults standardUserDefaults] setObject:maca forKey:@"bffUID"];
-  //  LogDebug(@"Seting bffUID %@",[[NSUserDefaults standardUserDefaults]objectForKey:@"bffUID"]);
-    
-    /* // use this when final production for iphone. No MAC in iphone Use MACA in simulator because every time you run the app it changes the UID...
-     NSString *uid=[[[UIDevice currentDevice]identifierForVendor]UUIDString];
-     NSString *trimmedString=[uid substringFromIndex:MAX((int)[uid length]-17, 0)];
-     [[NSUserDefaults standardUserDefaults] setObject:trimmedString  forKey:@"bffUID"];
-     [[NSUserDefaults standardUserDefaults] synchronize];*/
     
     appDelegate =   (AppDelegate *)[[UIApplication sharedApplication] delegate];
     heaterOn =    ([UIDevice currentDevice].userInterfaceIdiom == UIUserInterfaceIdiomPad)?[UIImage imageNamed:@"onsmall.png"]:[UIImage imageNamed:@"oniphone.png"];
@@ -932,35 +949,23 @@ MQTTMessageHandler aca=^(MQTTMessage *message)
     appDelegate.messageType=0; //web service comm
     UILongPressGestureRecognizer *longPressBut = [[UILongPressGestureRecognizer alloc]initWithTarget:self action:@selector(cloneBut:)];
     [addBut addGestureRecognizer:longPressBut];
-
-    //Load all BFF and insert imnages into scroll view. Keep the first one as workingRecord
- //   [self loadBffs];
     loadFlag=NO;
-//    [appDelegate.workingBFF setValue:maca forKey:@"bffUID"];
     [self getArrays];
     [self startBonjour];
-  //  connected.hidden=NO;
-//    dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
-//         [appDelegate startTelegramService:@"m13.cloudmqtt.com" withPort:@"18747"];    });
+
     
     dispatch_async(dispatch_get_main_queue(), ^{
         if(appDelegate.workingBFF!=NULL)
-      //      [appDelegate startTelegramService:@"broker.hivemq.com" withPort:@"1883"]; //connect to MQTT server
-//            _server.text= [[NSUserDefaults standardUserDefaults] objectForKey:@"mqttserver"];
-//        _port.text= [[NSUserDefaults standardUserDefaults] objectForKey:@"mqttport"];
-//        _meterid.text= [[NSUserDefaults standardUserDefaults] objectForKey:@"mqttuser"];
-//        _startkwh.text= [[NSUserDefaults standardUserDefaults] objectForKey:@"mqttpass"];
-     //   [appDelegate startTelegramService:@"m11.cloudmqtt.com" withPort:@"18388"]; //connect to MQTT server
         [appDelegate startTelegramService:[[NSUserDefaults standardUserDefaults] objectForKey:@"mqttserver"] withPort:[[NSUserDefaults standardUserDefaults] objectForKey:@"mqttport"]]; //connect to MQTT server
 
-        //    [appDelegate startTelegramService:@"m13.cloudmqtt.com" withPort:@"18747"]; //connect to MQTT server
         if(appDelegate.client){
             viejo=appDelegate.client.messageHandler;
             [appDelegate.client setMessageHandler:aca];
         }
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, 1 * NSEC_PER_SEC), dispatch_get_main_queue(), ^{
-            [comm lsender:@"session?password=zipo" andAnswer:NULL andTimeOut:1 vcController:self];
-        });
+        [self.view addSubview:tumblrHUD];
+        [comm lsender:@"session?password=zipo" andAnswer:NULL andTimeOut:1 vcController:self];
+        [self hud];
+       // });
 
     });
 
@@ -996,6 +1001,8 @@ MQTTMessageHandler aca=^(MQTTMessage *message)
 -(void)viewDidDisappear:(BOOL)animated
 {
     [super viewDidDisappear:animated];
+    if(mitimer)
+        [mitimer invalidate];
     NSNumber *passw=[[NSUserDefaults standardUserDefaults]objectForKey:@"password"];
     if (passw.integerValue==0)
         [[NSNotificationCenter defaultCenter] removeObserver:self name:UIApplicationWillEnterForegroundNotification object:nil];
@@ -1003,7 +1010,11 @@ MQTTMessageHandler aca=^(MQTTMessage *message)
 
 
 -(void)viewDidAppear:(BOOL)animated
-{
+{ 
+    yo=self;
+    if(appDelegate.client){
+        [appDelegate.client setMessageHandler:aca];
+    }
     if(!loadFlag)
     {
         [self loadBffs];
@@ -1039,7 +1050,7 @@ MQTTMessageHandler aca=^(MQTTMessage *message)
 
     if(appDelegate.workingBFF)
     {
-        NSLog(@"bffUID %@",[[NSUserDefaults standardUserDefaults]objectForKey:@"bffUID"]);
+        LogDebug(@"bffUID %@",[[NSUserDefaults standardUserDefaults]objectForKey:@"bffUID"]);
         [appDelegate subscribeMQTT:[NSString stringWithFormat:@"MeterIoT/%@/%@/%@/MSG",[appDelegate.workingBFF valueForKey:@"bffName"],[appDelegate.workingBFF valueForKey:@"bffName"],[[NSUserDefaults standardUserDefaults]objectForKey:@"bffUID"]]];
     }
     

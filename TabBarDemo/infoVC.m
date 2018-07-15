@@ -12,7 +12,7 @@
 #import <arpa/inet.h>
 #import "AppDelegate.h"
 
-#if 1 // set to 1 to enable logs
+#if 0 // set to 1 to enable logs
 #define LogDebug(frmt, ...) NSLog([frmt stringByAppendingString:@"[%s]{%d}"], ##__VA_ARGS__,__PRETTY_FUNCTION__,__LINE__);
 #else
 #define LogDebug(frmt, ...) {}
@@ -29,6 +29,29 @@ extern BOOL CheckWiFi();
 
 id yo;
 
+-(void)killBill
+{
+    if(tumblrHUD)
+        [tumblrHUD hide];
+    [self showMessage:@"Meter Msg" withMessage:@"Comm Timeout"];
+}
+
+-(void)hud
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        tumblrHUD = [[AMTumblrHud alloc] initWithFrame:CGRectMake((CGFloat) (_hhud.frame.origin.x),
+                                                                  (CGFloat) (_hhud.frame.origin.y), 55, 20)];
+        tumblrHUD.hudColor = _hhud.backgroundColor;
+        [self.view addSubview:tumblrHUD];
+        [tumblrHUD showAnimated:YES];
+        mitimer=[NSTimer scheduledTimerWithTimeInterval:10
+                                         target:self
+                                       selector:@selector(killBill)
+                                       userInfo:nil
+                                        repeats:NO];
+    });
+}
+
 -(void)setCallBackNull
 {
     [appDelegate.client setMessageHandler:NULL];
@@ -36,12 +59,15 @@ id yo;
 
 -(void)showMessage:(NSString*)title withMessage:(NSString*)que
 {
+    if(mitimer)
+        [mitimer invalidate];
+    dispatch_async(dispatch_get_main_queue(), ^{[tumblrHUD hide]; });
+
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:title
                                                                    message:que
                                                             preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
                                                           handler:^(UIAlertAction * action) {
-                                                              //       [self performSegueWithIdentifier:@"doneEditVC" sender:self];
                                                           }];
     
     [alert addAction:defaultAction];
@@ -76,6 +102,7 @@ MQTTMessageHandler infosettingsMsg=^(MQTTMessage *message)
     if(appDelegate.client)
         [appDelegate.client setMessageHandler:infosettingsMsg];
     mis=[NSString stringWithFormat:@"settings?password=zipo&meter=%d",(int)_dispMeter.selectedSegmentIndex];
+    [self hud];
     [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
 
 }
@@ -86,6 +113,7 @@ MQTTMessageHandler infosettingsMsg=^(MQTTMessage *message)
         return;
     if(appDelegate.client)
         [appDelegate.client setMessageHandler:infosettingsMsg];
+    [self hud];
     mis=[NSString stringWithFormat:@"internal?password=zipo&meter=%d&mmmm=%@&born=%@",(int)_dispMeter.selectedSegmentIndex,_meterid.text,_startkwh.text];
     [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
 }
@@ -116,6 +144,10 @@ MQTTMessageHandler infosettingsMsg=^(MQTTMessage *message)
 
 -(void)updateScreen:(NSArray*)partes
 {
+    if(mitimer)
+        [mitimer invalidate];
+    dispatch_async(dispatch_get_main_queue(), ^{[tumblrHUD hide]; });
+
     if(partes.count>=9)
     {
         _dispMeter.selectedSegmentIndex=[partes[0] integerValue];
@@ -131,6 +163,7 @@ MQTTMessageHandler infosettingsMsg=^(MQTTMessage *message)
     [self workingIcon];
     if(appDelegate.client)
         [appDelegate.client setMessageHandler:infosettingsMsg];
+    [self hud];
     mis=[NSString stringWithFormat:@"settings?password=zipo&meter=%d",(int)_dispMeter.selectedSegmentIndex];
     [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
    

@@ -11,7 +11,7 @@
 #import <Security/Security.h>
 #import "queueEntry.h"
 
-#if 1 // set to 1 to enable logs
+#if 0 // set to 1 to enable logs
 #define LogDebug(frmt, ...) NSLog([frmt stringByAppendingString:@"[%s]{%d}"], ##__VA_ARGS__,__PRETTY_FUNCTION__,__LINE__);
 #else
 #define LogDebug(frmt, ...) {}
@@ -64,7 +64,7 @@
 }
 -(void)createQueue:(NSString*)nombre
 {
-    NSLog(@"Create queue %@",nombre);
+    LogDebug(@"Create queue %@",nombre);
     NSMutableArray *temp=[queues objectForKey:nombre];
     if (temp==NULL)
     {
@@ -96,7 +96,9 @@ MQTTDisconnectionHandler disco=^(NSUInteger code){
 MQTTMessageHandler aqui=^(MQTTMessage *message)
 {
     // will queue messages received into a RAM queue based on message.Topic title as the queue name
-    AppDelegate *appDelegate=(AppDelegate *)[[UIApplication sharedApplication] delegate];
+   dispatch_async(dispatch_get_main_queue(), ^{
+       AppDelegate *appDelegate=(AppDelegate *)[[UIApplication sharedApplication] delegate];
+   
     NSString *text = message.payloadString;
     queueEntry * messageFromController=[[queueEntry alloc]init];
     messageFromController.date=[NSDate date];
@@ -140,13 +142,16 @@ MQTTMessageHandler aqui=^(MQTTMessage *message)
         if(temp!=NULL)
             [temp addObject:messageFromController]; //Add the message to the Queue
     }
+   });
 };
 
 -(void)subscribeMQTT:(NSString*)rx
 {
-    AppDelegate *appDelegate=(AppDelegate *)[[UIApplication sharedApplication] delegate];
+//     dispatch_async(dispatch_get_main_queue(), ^{
+//         AppDelegate *appDelegate=(AppDelegate *)[[UIApplication sharedApplication] delegate];
+//     });
     [client subscribe:rx withCompletionHandler:nil];
-    [appDelegate createQueue:rx];
+ //   [appDelegate createQueue:rx];
   //  [client subscribe:tx withCompletionHandler:nil];
  //   [appDelegate createQueue:tx];
 }

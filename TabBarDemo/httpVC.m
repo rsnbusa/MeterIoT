@@ -5,7 +5,7 @@
 #import "MQTTKit.h"
 #import "queueEntry.h"
 
-#if 1 // set to 1 to enable logs
+#if 0 // set to 1 to enable logs
 #define LogDebug(frmt, ...) NSLog([frmt stringByAppendingString:@"[%s]{%d}"], ##__VA_ARGS__,__PRETTY_FUNCTION__,__LINE__);
 #else
 #define LogDebug(frmt, ...) {}
@@ -78,7 +78,7 @@
         ipAddress=@"http://192.168.4.1/";
     else
         ipAddress=[appDelegate.workingBFF valueForKey:@"bffLastIpPort"];
-    NSLog(@"Ip %@",ipAddress);
+   // NSLog(@"Ip %@",ipAddress);
     if(quedijo==NULL)
         verbose=@"";
     else

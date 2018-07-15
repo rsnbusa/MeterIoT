@@ -11,6 +11,14 @@
 #import <ifaddrs.h>
 #import <arpa/inet.h>
 #import "AppDelegate.h"
+#import "AMTumblrHud.h"
+
+#if 0 // set to 1 to enable logs
+#define LogDebug(frmt, ...) NSLog([frmt stringByAppendingString:@"[%s]{%d}"], ##__VA_ARGS__,__PRETTY_FUNCTION__,__LINE__);
+#else
+#define LogDebug(frmt, ...) {}
+#endif
+
 extern BOOL CheckWiFi();
 
 @interface framVC ()
@@ -19,19 +27,100 @@ extern BOOL CheckWiFi();
 
 @implementation framVC
 
+id yo;
+
+-(void)killBill
+{
+    if(tumblrHUD)
+        [tumblrHUD hide];
+    [self showMessage:@"Meter Msg" withMessage:@"Comm Timeout"];
+}
+
+-(void)hud
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        tumblrHUD = [[AMTumblrHud alloc] initWithFrame:CGRectMake((CGFloat) (_hhud.frame.origin.x),
+                                                                  (CGFloat) (_hhud.frame.origin.y), 55, 20)];
+        tumblrHUD.hudColor = _hhud.backgroundColor;
+        [self.view addSubview:tumblrHUD];
+        [tumblrHUD showAnimated:YES];
+       mitimer=[NSTimer scheduledTimerWithTimeInterval:10
+                                                target:self
+                                              selector:@selector(killBill)
+                                              userInfo:nil
+                                               repeats:NO];
+    });
+}
+
+-(void)setCallBackNull
+{
+    [appDelegate.client setMessageHandler:NULL];
+}
+
+-(void)showMessage:(NSString*)title withMessage:(NSString*)que
+{
+    if(mitimer)
+        [mitimer invalidate];
+    dispatch_async(dispatch_get_main_queue(), ^{[tumblrHUD hide]; });
+    
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:title
+                                                                   message:que
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+                                                          handler:^(UIAlertAction * action) {
+
+                                                          }];
+    
+    [alert addAction:defaultAction];
+    [self presentViewController:alert animated:YES completion:nil];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    [alert dismissViewControllerAnimated:YES completion:nil];
+    });
+}
+
+MQTTMessageHandler framMsg=^(MQTTMessage *message)
+{
+    [yo setCallBackNull];
+    LogDebug(@"FramMsg %@ %@",message.payload,message.payloadString);
+    dispatch_async(dispatch_get_main_queue(), ^{
+    [yo showMessage:@"Meter Msg" withMessage:message.payloadString];
+    });
+};
+
+-(void)updateit:(NSString*)lanswer
+{
+    if(mitimer)
+        [mitimer invalidate];
+        NSArray *partes=[lanswer componentsSeparatedByString:@"!"];
+        [self updateScreen:partes];
+    }
+
+MQTTMessageHandler framInfo=^(MQTTMessage *message)
+{
+    [yo setCallBackNull];
+    LogDebug(@"FramMsg %@ %@",message.payload,message.payloadString);
+    dispatch_async(dispatch_get_main_queue(), ^{
+    [yo updateit:message.payloadString];
+    });
+};
+
+
 -(IBAction)formatAll:(UISegmentedControl*)sender
 {
     if(sender.selectedSegmentIndex==3)
         return;
-
+    if(appDelegate.client)
+        [appDelegate.client setMessageHandler:framMsg];
     if(sender.selectedSegmentIndex==0)
     {
-        mis=[NSString stringWithFormat:@"frammanager?password=zipo&ALL=0"];
+        mis=[NSString stringWithFormat:@"frammanager?password=zipo&ALL=y"];
+        [self hud];
         [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
         return;
     }
     else{
-        mis=[NSString stringWithFormat:@"frammanager?password=zipo&METER=%d&all=0",(int)sender.selectedSegmentIndex-1];
+        mis=[NSString stringWithFormat:@"frammanager?password=zipo&METER=%d&full=y",(int)sender.selectedSegmentIndex-1];
+        [self hud];
         [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
         return;
     }
@@ -40,7 +129,9 @@ extern BOOL CheckWiFi();
 
 -(IBAction)formatSingle:(id)sender
 {
-    NSLog(@"Mes %@ Dia %@ Hora %@",_mes.text,_dia.text,_hora.text);
+    if(appDelegate.client)
+        [appDelegate.client setMessageHandler:framMsg];
+    LogDebug(@"Mes %@ Dia %@ Hora %@",_mes.text,_dia.text,_hora.text);
     if(![_hora.text isEqualToString:@""])
     {// Hour format
         //must have day and month
@@ -48,7 +139,9 @@ extern BOOL CheckWiFi();
             return; //Give error message
         if([_mes.text isEqualToString:@""])
             return ;
-        mis=[NSString stringWithFormat:@"frammanager?password=zipo&METER=%d&HOUR=%@&mes=%@&day=%@",(int)_formatMeter.selectedSegmentIndex,_hora.text,_mes.text,_dia.text];
+        
+        [self hud];
+        mis=[NSString stringWithFormat:@"frammanager?password=zipo&METER=%d&HOUR=%@&month=%@&mday=%@",(int)_formatMeter.selectedSegmentIndex,_hora.text,_mes.text,_dia.text];
         [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
         return;
     }
@@ -58,13 +151,15 @@ extern BOOL CheckWiFi();
             // Day format
             if([_mes.text isEqualToString:@""])
                 return ;
-            mis=[NSString stringWithFormat:@"frammanager?password=zipo&METER=%d&DAY=%@&mes=%@",(int)_formatMeter.selectedSegmentIndex,_dia.text,_mes.text];
+            [self hud];
+            mis=[NSString stringWithFormat:@"frammanager?password=zipo&METER=%d&DAY=%@&month=%@",(int)_formatMeter.selectedSegmentIndex,_dia.text,_mes.text];
             [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
             return;
         }
         else
             if(![_mes.text isEqualToString:@""])
             { //Month format
+                [self hud];
                 mis=[NSString stringWithFormat:@"frammanager?password=zipo&METER=%d&MON=%@",(int)_formatMeter.selectedSegmentIndex,_mes.text];
                 [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
             }
@@ -73,6 +168,7 @@ extern BOOL CheckWiFi();
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    yo=self;
     appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     [self workingIcon];
     comm=[httpVC new];
@@ -83,19 +179,14 @@ extern BOOL CheckWiFi();
 
 -(void)viewDidAppear:(BOOL)animated
 {
-    NSString *lanswer;
-    
+    yo=self;
     [super viewDidAppear:animated];
+    if(appDelegate.client)
+        [appDelegate.client setMessageHandler:framInfo];
     mis=[NSString stringWithFormat:@"settings?password=zipo"];
-    if( [comm lsender:mis andAnswer:&lanswer andTimeOut:CheckWiFi()?2:10 vcController:self])
-    {
-        // NSLog(@"Setings %@",lanswer);
-        //set different controls to received data
-        NSArray *partes=[lanswer componentsSeparatedByString:@"!"];
-        [self updateScreen:partes];
-    }
-    
+    [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
 }
+
 -(void)workingIcon
 {
     

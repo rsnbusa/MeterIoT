@@ -20,6 +20,23 @@ extern BOOL CheckWiFi();
 
 @implementation mqttUser
 
+-(IBAction)ssl:(UIButton*)sender
+{
+    if(sender.tag==0)
+    {
+        [[NSUserDefaults standardUserDefaults] setBool:YES forKey:@"bffSSL"];
+        sender.tag=1;
+        [sender setImage:onImage forState:UIControlStateNormal];
+    }
+    else
+    {
+        [[NSUserDefaults standardUserDefaults] setBool:NO forKey:@"bffSSL"];
+        sender.tag=0;
+        [sender setImage:offImage forState:UIControlStateNormal];
+
+    }
+}
+
 -(IBAction)update:(id)sender
 {
     if([_meterid.text isEqualToString:@""] || [_startkwh.text isEqualToString:@""] || [_server.text isEqualToString:@""] || [_port.text isEqualToString:@""])
@@ -31,7 +48,7 @@ extern BOOL CheckWiFi();
     [[NSUserDefaults standardUserDefaults]  synchronize];
     if(appDelegate.client)
         [appDelegate.client setMessageHandler:NULL];
-    mis=[NSString stringWithFormat:@"internal?password=zipo&uupp=%@&pasw=%@&qqqq=%@&port=%@",_meterid.text,_startkwh.text,_server.text,_port.text];
+    mis=[NSString stringWithFormat:@"internal?password=zipo&uupp=%@&pasw=%@&qqqq=%@&port=%@&ssl=%d",_meterid.text,_startkwh.text,_server.text,_port.text,(int)_sslBut.tag];
     [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
 }
 
@@ -52,6 +69,8 @@ extern BOOL CheckWiFi();
 
 - (void)viewDidLoad {
     [super viewDidLoad];
+    onImage = [UIImage imageNamed:@"lockedw.png"];
+    offImage = [UIImage imageNamed:@"unlockedw.png"];
     appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     [self workingIcon];
     comm=[httpVC new];
@@ -59,6 +78,17 @@ extern BOOL CheckWiFi();
     _port.text= [[NSUserDefaults standardUserDefaults] objectForKey:@"mqttport"];
     _meterid.text= [[NSUserDefaults standardUserDefaults] objectForKey:@"mqttuser"];
     _startkwh.text= [[NSUserDefaults standardUserDefaults] objectForKey:@"mqttpass"];
+    if([[NSUserDefaults standardUserDefaults] boolForKey:@"bffSSL"])
+    {
+        _sslBut.tag=1;
+        [_sslBut setImage:onImage forState:UIControlStateNormal];
+    }
+    else{
+        _sslBut.tag=0;
+        [_sslBut setImage:offImage forState:UIControlStateNormal];
+
+    }
+
     
 }
 

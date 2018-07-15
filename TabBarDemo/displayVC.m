@@ -11,6 +11,7 @@
 #import <ifaddrs.h>
 #import <arpa/inet.h>
 #import "AppDelegate.h"
+#import "AMTumblrHud.h"
 
 #if 1 // set to 1 to enable logs
 #define LogDebug(frmt, ...) NSLog([frmt stringByAppendingString:@"[%s]{%d}"], ##__VA_ARGS__,__PRETTY_FUNCTION__,__LINE__);
@@ -22,13 +23,34 @@ extern BOOL CheckWiFi();
 
 @interface displayVC ()
 -(void)updateScreen:(NSArray*)partes;
-
 @end
 
 @implementation displayVC
+
 id yo;
 
+-(void)killBill
+{
+    if(tumblrHUD)
+        [tumblrHUD hide];
+    [self showMessage:@"Meter Msg" withMessage:@"Comm Timeout"];
+}
 
+-(void)hud
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        tumblrHUD = [[AMTumblrHud alloc] initWithFrame:CGRectMake((CGFloat) (_hhud.frame.origin.x),
+                                                                  (CGFloat) (_hhud.frame.origin.y), 55, 20)];
+        tumblrHUD.hudColor = _hhud.backgroundColor;
+        [self.view addSubview:tumblrHUD];
+        [tumblrHUD showAnimated:YES];
+        mitimer=[NSTimer scheduledTimerWithTimeInterval:10
+                                                target:self
+                                              selector:@selector(killBill)
+                                              userInfo:nil
+                                               repeats:NO];
+    });
+}
 -(void)setCallBackNull
 {
     [appDelegate.client setMessageHandler:NULL];
@@ -36,12 +58,19 @@ id yo;
 
 -(void)showMessage:(NSString*)title withMessage:(NSString*)que
 {
+    if(mitimer)
+        [mitimer invalidate];
+    dispatch_async(dispatch_get_main_queue(), ^{[tumblrHUD hide];});
+    
+    if(_respuesta.isOn)
+    {
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:title
                                                                    message:que
                                                             preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
                                                           handler:^(UIAlertAction * action) {
-                                                              //       [self performSegueWithIdentifier:@"doneEditVC" sender:self];
+
+
                                                           }];
     
     [alert addAction:defaultAction];
@@ -49,13 +78,18 @@ id yo;
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
         [alert dismissViewControllerAnimated:YES completion:nil];
     });
+    }
+    else
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(0.5 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+    });
 }
 
 
 MQTTMessageHandler displayMsg=^(MQTTMessage *message)
 {
- //   [yo setCallBackNull];
+   
     LogDebug(@"SettingsMsg %@ %@",message.payload,message.payloadString);
+    
     dispatch_async(dispatch_get_main_queue(), ^{
         [yo showMessage:@"Settings Answer" withMessage:message.payloadString];
     });
@@ -71,35 +105,43 @@ MQTTMessageHandler dinfoMsg=^(MQTTMessage *message)
     });
 };
 
-
-
-
 -(IBAction)displayMeter:(UISegmentedControl*)sender
 {
+//    if(appDelegate.client)
+//        [appDelegate.client setMessageHandler:dinfoMsg];
+//    mis=[NSString stringWithFormat:@"settings?password=zipo&meter=%d",(int)sender.selectedSegmentIndex];
+//    [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
     if(appDelegate.client)
         [appDelegate.client setMessageHandler:displayMsg];
     mis=[NSString stringWithFormat:@"displaymanager?password=zipo&meter=%d",(int)sender.selectedSegmentIndex];
     [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
+    [self hud];
+
 }
 
+-(IBAction)dispTime:(UISlider*)sender
+{
+    _inter.text=[NSString stringWithFormat:@"%d",(int)sender.value];
+
+}
 -(IBAction)intervalSelect:(id)sender
 {
     if(appDelegate.client)
         [appDelegate.client setMessageHandler:displayMsg];
-    _inter.text=[NSString stringWithFormat:@"%d",(int)_interval.value];
     mis=[NSString stringWithFormat:@"displaymanager?password=zipo&meter=%d&int=%d",(int)_dispMeter.selectedSegmentIndex,(int)_interval.value];
     [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
-    
+    [self hud];
+
 }
 
 -(IBAction)onOff:(UISwitch*)sender
 {
-    NSLog(@"Sender %d",sender.isOn);
     if(appDelegate.client)
         [appDelegate.client setMessageHandler:displayMsg];
     mis=[NSString stringWithFormat:@"displaymanager?password=zipo&st=%d",sender.isOn];
     [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
-    
+    [self hud];
+
 }
 
 -(IBAction)displayMode:(UISegmentedControl*)sender
@@ -107,7 +149,10 @@ MQTTMessageHandler dinfoMsg=^(MQTTMessage *message)
     if(appDelegate.client)
         [appDelegate.client setMessageHandler:displayMsg];
     mis=[NSString stringWithFormat:@"displaymanager?password=zipo&mode=%d",(int)sender.selectedSegmentIndex];
+    [self hud];
     [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
+
+
 }
 
 
@@ -132,29 +177,36 @@ MQTTMessageHandler dinfoMsg=^(MQTTMessage *message)
     comm=[httpVC new];
     _dispMeter.tintColor=[UIColor colorWithRed:233.0/256.0 green:96.0/256.0 blue:187.0/256.0 alpha:1.0];
     _dispMode.tintColor=[UIColor colorWithRed:233.0/256.0 green:96.0/256.0 blue:187.0/256.0 alpha:1.0];
-
 }
 
 -(void)viewDidAppear:(BOOL)animated
 {
-    NSString *lanswer;
     yo=self;
     [super viewDidAppear:animated];
     [self workingIcon];
     if(appDelegate.client)
         [appDelegate.client setMessageHandler:dinfoMsg];
-    mis=[NSString stringWithFormat:@"settings?password=zipo"];
-    [comm lsender:mis andAnswer:&lanswer andTimeOut:CheckWiFi()?2:10 vcController:self];
-    {
-       // NSLog(@"Setings %@",lanswer);
-        //set different controls to received data
-        NSArray *partes=[lanswer componentsSeparatedByString:@"!"];
-        [self updateScreen:partes];
-    }
+    
+    mis=[NSString stringWithFormat:@"settings?password=zipo&meter=0"];
+    [comm lsender:mis andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
+    [self hud];
+
+//    {
+//       // NSLog(@"Setings %@",lanswer);
+//        //set different controls to received data
+//        NSArray *partes=[lanswer componentsSeparatedByString:@"!"];
+//        [self updateScreen:partes];
+//    }
 
 }
 -(void)updateScreen:(NSArray*)partes
 {
+    if(mitimer)
+        [mitimer invalidate];
+      dispatch_async(dispatch_get_main_queue(), ^{
+          [tumblrHUD hide];
+      });
+
     if(partes.count>=9)
     {
         _dispMeter.selectedSegmentIndex=[partes[0] integerValue];

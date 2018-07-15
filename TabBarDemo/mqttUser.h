@@ -15,8 +15,10 @@
     httpVC *comm;
     NSString *mis;
     AppDelegate* appDelegate;
+    UIImage *onImage,*offImage;
 }
 @property (strong) IBOutlet UIImageView *bffIcon;
+@property (strong) IBOutlet UIButton *sslBut;
 @property (strong) IBOutlet UITextField *meterid,*startkwh,*server,*port;
 
 @end

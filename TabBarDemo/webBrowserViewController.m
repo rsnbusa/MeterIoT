@@ -12,6 +12,12 @@
 #import <arpa/inet.h>
 #import "AppDelegate.h"
 
+#if 0 // set to 1 to enable logs
+#define LogDebug(frmt, ...) NSLog([frmt stringByAppendingString:@"[%s]{%d}"], ##__VA_ARGS__,__PRETTY_FUNCTION__,__LINE__);
+#else
+#define LogDebug(frmt, ...) {}
+#endif
+
 @interface webBrowserViewController ()
 
 @end
@@ -114,7 +120,7 @@ BOOL CheckWiFiW() {
 
 -(IBAction)formatSingle:(id)sender
 {
-    NSLog(@"Mes %@ Dia %@ Hora %@",_mes.text,_dia.text,_hora.text);
+    LogDebug(@"Mes %@ Dia %@ Hora %@",_mes.text,_dia.text,_hora.text);
     if(![_hora.text isEqualToString:@""])
     {// Hour format
         //must have day and month
@@ -225,7 +231,7 @@ BOOL CheckWiFiW() {
     mis=[NSString stringWithFormat:@"settings?password=zipo"];
    if( [comm lsender:mis andAnswer:&lanswer andTimeOut:CheckWiFiW()?2:10 vcController:self])
    {
-       NSLog(@"Setings %@",lanswer);
+       LogDebug(@"Setings %@",lanswer);
        //set different controls to received data
        NSArray *partes=[lanswer componentsSeparatedByString:@"!"];
        [self updateScreen:partes];

@@ -10,13 +10,19 @@
 #import "RSDFDatePickerView.h"
 #import "httpVc.h"
 #import "JBBarChartView.h"
+#import "AppDelegate.h"
+#import "AMTumblrHud.h"
 
 @interface ThirViewController : UIViewController<RSDFDatePickerViewDelegate, RSDFDatePickerViewDataSource>
 {
-        httpVC *comm;
+    httpVC *comm;
     JBBarChartView *barChartView;
-    
-}
+    AppDelegate *appDelegate;
+    MQTTMessageHandler viejo;
+    AMTumblrHud *tumblrHUD ;
+    NSTimer *mitimer;
+    }
+
 @property (copy, nonatomic) NSMutableArray *datesToMark,*horasDia;
 @property (copy, nonatomic) NSDictionary *statesOfTasks;
 @property (copy, nonatomic) NSDateFormatter *dateFormatter;
@@ -26,7 +32,7 @@
 @property (copy, nonatomic) NSDate *today;
 @property (copy, nonatomic) NSCalendar *calendar;
 @property (copy, nonatomic) NSNumber *cualMeter;
-@property (strong) IBOutlet UIImageView *algox;
+@property (strong) IBOutlet UIImageView *algox,*hhud;
 @property (strong) IBOutlet UIButton *doneb;
 
 

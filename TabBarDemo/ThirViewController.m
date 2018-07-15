@@ -22,6 +22,94 @@
 
 @import UIKit;
 @implementation ThirViewController
+id yo;
+
+-(void)killBill
+{
+    if(tumblrHUD)
+        [tumblrHUD hide];
+    [self showMessage:@"Meter Msg" withMessage:@"Comm Timeout"];
+}
+
+-(void)hud
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        tumblrHUD = [[AMTumblrHud alloc] initWithFrame:CGRectMake((CGFloat) (_hhud.frame.origin.x),
+                                                                  (CGFloat) (_hhud.frame.origin.y), 55, 20)];
+        tumblrHUD.hudColor = _hhud.backgroundColor;
+        [self.view addSubview:tumblrHUD];
+        [tumblrHUD showAnimated:YES];
+        mitimer=[NSTimer scheduledTimerWithTimeInterval:10
+                                         target:self
+                                       selector:@selector(killBill)
+                                       userInfo:nil
+                                        repeats:NO];
+    });
+}
+-(void)setCallBackNull
+{
+    [appDelegate.client setMessageHandler:NULL];
+}
+
+-(void)showMessage:(NSString*)title withMessage:(NSString*)que
+{
+    if(mitimer)
+        [mitimer invalidate];
+    UIAlertController* alert = [UIAlertController alertControllerWithTitle:title
+                                                                   message:que
+                                                            preferredStyle:UIAlertControllerStyleAlert];
+    UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
+                                                          handler:^(UIAlertAction * action) {
+                                                              //       [self performSegueWithIdentifier:@"doneEditVC" sender:self];
+                                                          }];
+    
+    [alert addAction:defaultAction];
+    [self presentViewController:alert animated:YES completion:nil];
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(3 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
+        [alert dismissViewControllerAnimated:YES completion:nil];
+    });
+}
+
+-(void) showDays:(NSString*)lanswer
+{
+    if(mitimer)
+        [mitimer invalidate];
+    _datesToMark=[lanswer componentsSeparatedByString:@"!"];
+      [_datePickerView reloadData];
+    dispatch_async(dispatch_get_main_queue(), ^{ [tumblrHUD hide];});
+
+
+}
+
+-(void)showHoras:(NSString*)lanswer
+{
+    if(mitimer)
+        [mitimer invalidate];
+    _horasDia=[lanswer componentsSeparatedByString:@"!"];
+    [self.view bringSubviewToFront:_algox];
+    [barChartView reloadData];
+    dispatch_async(dispatch_get_main_queue(), ^{ [tumblrHUD hide];});
+
+}
+
+MQTTMessageHandler allDia=^(MQTTMessage *message)
+{
+    [yo setCallBackNull];
+    LogDebug(@"CalendarMsg Dia %@ %@",message.payload,message.payloadString);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [yo showHoras:message.payloadString];
+    });
+};
+
+MQTTMessageHandler allMes=^(MQTTMessage *message)
+{
+    [yo setCallBackNull];
+    LogDebug(@"CalendarMsg Mes%@ len %d",message.payload,message.payload.length);
+    dispatch_async(dispatch_get_main_queue(), ^{
+        [yo showDays:message.payloadString];
+    });
+};
+
 
 - (NSDate *)today
 {
@@ -54,18 +142,12 @@
     NSDateComponents *components = [[NSCalendar currentCalendar] components:NSCalendarUnitDay | NSCalendarUnitMonth | NSCalendarUnitYear fromDate:date];
     NSInteger day = [components day];
     NSInteger month = [components month];
-
+    [self hud];
     NSString *mis=[NSString stringWithFormat:@"gethoursinday?meter=%d&month=%d&day=%d",(int)_cualMeter.integerValue,(int)month-1,(int)day-1];
-    NSString *lanswer;
-    
-    int reply=[comm lsender:mis andAnswer:&lanswer andTimeOut:2 vcController:self];
-    
-    if (reply)
-        _horasDia=[lanswer componentsSeparatedByString:@"!"];
-    else
-        [_horasDia removeAllObjects];
-    [self.view bringSubviewToFront:_algox];
-    [barChartView reloadData];
+    if(appDelegate.client)
+        [appDelegate.client setMessageHandler:allDia];
+   [comm lsender:mis andAnswer:NULL andTimeOut:2 vcController:self];
+
 
 //    [[[UIAlertView alloc] initWithTitle:@"Picked Date" message:[self.dateFormatter stringFromDate:date] delegate:nil cancelButtonTitle:@":D" otherButtonTitles:nil] show];
 }
@@ -128,49 +210,43 @@
     NSDateFormatter *formatter = [[NSDateFormatter alloc] init];
     [formatter setDateFormat:@"D"];
     NSUInteger dayOfYear = [[formatter stringFromDate:date] intValue];
-    
+    LogDebug(@"Date %@ dayyear %lu dia %@",date,dayOfYear,_datesToMark[dayOfYear]);
     if([_datesToMark[dayOfYear-1] integerValue] >0)
+   //     if(1)
     {
-    NSDictionary *attributes = @{NSFontAttributeName            : [UIFont fontWithName:@"Helvetica" size:16],
-                                 NSForegroundColorAttributeName : [UIColor blueColor],
-                                 NSBackgroundColorAttributeName : [UIColor clearColor]};
-    CGSize size = CGSizeMake(300, 9999);
-    NSString *myString =_datesToMark[dayOfYear-1];
-    UIFont *myFont = [UIFont  fontWithName:@"Helvetica" size:16];
-    CGSize myStringSize = [myString sizeWithFont:myFont
-                               constrainedToSize:size
-                                   lineBreakMode:NSLineBreakByClipping];
-    UIGraphicsBeginImageContextWithOptions(myStringSize, NO, 0);
-    [myString drawInRect:CGRectMake(0, 0, myStringSize.width, myStringSize.height) withAttributes:attributes];
-    UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
-    UIGraphicsEndImageContext();
-    return image;
+        NSDictionary *attributes = @{NSFontAttributeName            : [UIFont fontWithName:@"Helvetica" size:16],
+                                     NSForegroundColorAttributeName : [UIColor blueColor],
+                                     NSBackgroundColorAttributeName : [UIColor clearColor]};
+        CGSize size = CGSizeMake(300, 9999);
+        NSString *myString =_datesToMark[dayOfYear-1];
+        UIFont *myFont = [UIFont  fontWithName:@"Helvetica" size:16];
+        CGSize myStringSize = [myString sizeWithFont:myFont constrainedToSize:size lineBreakMode:NSLineBreakByClipping];
+        UIGraphicsBeginImageContextWithOptions(myStringSize, NO, 0);
+        [myString drawInRect:CGRectMake(0, 0, myStringSize.width, myStringSize.height) withAttributes:attributes];
+        UIImage *image = UIGraphicsGetImageFromCurrentImageContext();
+        UIGraphicsEndImageContext();
+        return image;
     }
     else
         return NULL;
     
 }
 
-
 - (void)viewWillDisappear:(BOOL)animated { //Is used as a Save Options if anything was changed Instead of Buttons
     [super viewWillDisappear:animated];
-   
+    if(appDelegate.client)
+        [appDelegate.client setMessageHandler:viejo];
 
    }
 -(void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
+    yo=self;
     NSString *mis=[NSString stringWithFormat:@"getdayall?meter=%d",(int)_cualMeter.integerValue];
-    NSString *lanswer;
-
-    int reply=[comm lsender:mis andAnswer:&lanswer andTimeOut:2 vcController:self];
-    
-    if (reply)
-    {
-        _datesToMark=[lanswer componentsSeparatedByString:@"!"];
-    }
-    else
-        [_datesToMark removeAllObjects];
+    if(appDelegate.client)
+        [appDelegate.client setMessageHandler:allMes];
+    [self hud];
+    [comm lsender:mis andAnswer:NULL andTimeOut:2 vcController:self];
 }
 
 -(IBAction)regresa:(UIButton *)sender
@@ -190,6 +266,9 @@
 - (void)viewDidLoad {
 
     [super viewDidLoad];
+    yo=self;
+    appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
+     viejo=appDelegate.client.messageHandler;
     _datesToMark=[[NSMutableArray alloc]initWithCapacity:366];
      comm=[httpVC new];
     _calendar = [[NSCalendar alloc] initWithCalendarIdentifier:NSCalendarIdentifierGregorian];
@@ -218,7 +297,7 @@
 
 - (CGFloat)barChartView:(JBBarChartView *)barChartView heightForBarViewAtIndex:(NSUInteger)index
 {
-    NSLog(@"Hora %d= %f",index,[_horasDia[index] floatValue]);
+    LogDebug(@"Hora %d= %f",index,[_horasDia[index] floatValue]);
     return [_horasDia[index] floatValue]; // height of bar at index
 }
 

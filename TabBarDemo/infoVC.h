@@ -9,17 +9,19 @@
 #import <UIKit/UIKit.h>
 #import "httpVC.h"
 #import "AppDelegate.h"
-
+#import "AMTumblrHud.h"
 @interface infoVC : UIViewController
 {
     httpVC *comm;
     NSString *mis;
     AppDelegate* appDelegate;
+    AMTumblrHud *tumblrHUD ;
+    NSTimer *mitimer;
 }
 
 
 @property (strong) IBOutlet UISegmentedControl *dispMeter;
-@property (strong) IBOutlet UIImageView *bffIcon;
+@property (strong) IBOutlet UIImageView *bffIcon,*hhud;
 @property (strong) IBOutlet UITextField *meterid,*startkwh;
 
 @end

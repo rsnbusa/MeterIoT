@@ -7,7 +7,8 @@
 //
 
 #import "resetVC.h"
-#if 1 // set to 1 to enable logs
+#import "AMTumblrHud.h"
+#if 0 // set to 1 to enable logs
 #define LogDebug(frmt, ...) NSLog([frmt stringByAppendingString:@"[%s]{%d}"], ##__VA_ARGS__,__PRETTY_FUNCTION__,__LINE__);
 #else
 #define LogDebug(frmt, ...) {}
@@ -22,6 +23,28 @@ id yo;
 
 extern BOOL CheckWiFi();
 
+-(void)killBill
+{
+    if(tumblrHUD)
+        [tumblrHUD hide];
+    [self showMessage:@"Meter Msg" withMessage:@"Comm Timeout"];
+}
+
+-(void)hud
+{
+    dispatch_async(dispatch_get_main_queue(), ^{
+        tumblrHUD = [[AMTumblrHud alloc] initWithFrame:CGRectMake((CGFloat) (_hhud.frame.origin.x),
+                                                                  (CGFloat) (_hhud.frame.origin.y), 55, 20)];
+        tumblrHUD.hudColor = _hhud.backgroundColor;
+        [self.view addSubview:tumblrHUD];
+        [tumblrHUD showAnimated:YES];
+        mitimer=[NSTimer scheduledTimerWithTimeInterval:10
+                                         target:self
+                                       selector:@selector(killBill)
+                                       userInfo:nil
+                                        repeats:NO];
+    });
+}
 -(void)setCallBackNull
 {
     [appDelegate.client setMessageHandler:NULL];
@@ -29,12 +52,16 @@ extern BOOL CheckWiFi();
 
 -(void)showMessage:(NSString*)title withMessage:(NSString*)que
 {
+    if(mitimer)
+        [mitimer invalidate];
+    dispatch_async(dispatch_get_main_queue(), ^{ [tumblrHUD hide];});
+    
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:title
                                                                    message:que
                                                             preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
                                                           handler:^(UIAlertAction * action) {
-                                                              //       [self performSegueWithIdentifier:@"doneEditVC" sender:self];
+
                                                           }];
     
     [alert addAction:defaultAction];
@@ -60,6 +87,7 @@ MQTTMessageHandler settingsMsg=^(MQTTMessage *message)
         [appDelegate.client setMessageHandler:settingsMsg];
     UIAlertController *alert = [UIAlertController alertControllerWithTitle:title message:@"Please Confirm" preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction *defaultAction = [UIAlertAction actionWithTitle:@"Ok" style:UIAlertActionStyleDefault handler:^(UIAlertAction *action){
+        [self hud];
         [comm lsender:comando andAnswer:NULL andTimeOut:CheckWiFi()?2:10 vcController:self];
     }];
     UIAlertAction *cancelAction = [UIAlertAction actionWithTitle:@"Cancel" style:UIAlertActionStyleDefault handler:nil];
@@ -110,17 +138,22 @@ MQTTMessageHandler settingsMsg=^(MQTTMessage *message)
     appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
     [self workingIcon];
     comm=[httpVC new];
-      
 }
 
-/*
--(void)viewDidAppear:(BOOL)animated
+-(void)viewWillAppear:(BOOL)animated
 {
-    [self viewDidAppear:animated];
+    [super viewWillAppear:animated];
+    yo=self;
     [self workingIcon];
-
 }
- */
+
+//-(void)viewDidAppear:(BOOL)animated
+//{
+//    [self viewDidAppear:animated];
+//    [self workingIcon];
+//    yo=self;
+//}
+
 - (void)didReceiveMemoryWarning {
     [super didReceiveMemoryWarning];
     // Dispose of any resources that can be recreated.

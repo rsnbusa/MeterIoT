@@ -32,20 +32,9 @@ static const CGFloat LANDSCAPE_KEYBOARD_HEIGHT = 162;
 
 @synthesize petName,phone,email,bffIcon,bjTable,bfname,vetphone,emaill,birth,watts,galons,kwh,volts,water,offline,group,transport,limit;
 
-
--(void)blurScreen
-{
-    CGRect screenSize = [UIScreen mainScreen].bounds;
-    UIImage *screenShot = [self.view screenshot];
-    UIImage *blurImage  = [screenShot blurredImageWithRadius:10.5 iterations:2 tintColor:nil];
-    backGroundBlurr = [[UIImageView alloc]initWithImage:blurImage];
-    backGroundBlurr.frame = CGRectMake(0, 0, screenSize.size.width, screenSize.size.height);
-    [self.view addSubview:backGroundBlurr];
-}
-
 -(void)showErrorMessage
 {
-    [self blurScreen];
+
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"TimeOut"
                                                                    message:@"Maybe out of range or off"
                                                             preferredStyle:UIAlertControllerStyleAlert];
@@ -61,7 +50,7 @@ static const CGFloat LANDSCAPE_KEYBOARD_HEIGHT = 162;
 
 -(void)showMessage:(NSString*)title withMessage:(NSString*)que
 {
-    [self blurScreen];
+
     UIAlertController* alert = [UIAlertController alertControllerWithTitle:title
                                                                    message:que                                                            preferredStyle:UIAlertControllerStyleAlert];
     UIAlertAction* defaultAction = [UIAlertAction actionWithTitle:@"OK" style:UIAlertActionStyleDefault
@@ -200,9 +189,12 @@ static const CGFloat LANDSCAPE_KEYBOARD_HEIGHT = 162;
         NSString *emailURL=[email.text stringByAddingPercentEncodingWithAllowedCharacters:chars];
         NSString *lanswer;
         int reply;
+        NSDate *now = [NSDate date];
+        NSTimeInterval nowEpochSeconds = [now timeIntervalSince1970];
+        
         if(!appDelegate.addf && !appDelegate.clonef)// ojo clonef logic
         {
-        mis=[NSString stringWithFormat:@"generalap?meter=%@&group=%@&watts=%ld&volts=%ld&galons=%ld&kwh=%.2f&email=%@&autoTemp=%d&SubMeter=%d",heatURL,groupURL, watts.text.integerValue,volts.text.integerValue,galons.text.integerValue,kwh.text.floatValue,emailURL,limit.isOn,(int)_whichMeter.selectedSegmentIndex];//multiple arguments
+        mis=[NSString stringWithFormat:@"generalap?meter=%@&group=%@&watts=%ld&volts=%ld&galons=%ld&kwh=%.2f&email=%@&autoTemp=%d&SubMeter=%d&epoch=%ld",heatURL,groupURL, watts.text.integerValue,volts.text.integerValue,galons.text.integerValue,kwh.text.floatValue,emailURL,limit.isOn,(int)_whichMeter.selectedSegmentIndex,(uint32_t)nowEpochSeconds];//multiple arguments
         reply=[comm lsender:mis andAnswer:&lanswer andTimeOut:[[[NSUserDefaults standardUserDefaults]objectForKey:@"txTimeOut"] intValue] vcController:self];
         }
         else
@@ -366,7 +358,6 @@ static const CGFloat LANDSCAPE_KEYBOARD_HEIGHT = 162;
     [super viewDidLoad];
     comm=[httpVC new];
     appDelegate = (AppDelegate *)[[UIApplication sharedApplication] delegate];
-//    appDelegate.oldbff=appDelegate.workingBFF;
     NSNumber *passw=[[NSUserDefaults standardUserDefaults]objectForKey:@"password"];
     if (passw.integerValue>0)
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(checkLogin)
@@ -384,29 +375,15 @@ static const CGFloat LANDSCAPE_KEYBOARD_HEIGHT = 162;
     limit.transform = CGAffineTransformScale(CGAffineTransformIdentity, .75, 0.75);
 
 //load from workingbff
-  //  LogDebug(@"Working %@",appDelegate.workingBFF);
     petName.text=[appDelegate.workingBFF valueForKey:@"bffName"];
     email.text=[appDelegate.workingBFF valueForKey:@"bffEmail"];
     phone.text=[appDelegate.workingBFF valueForKey:@"bffPhone"];
     group.text=[appDelegate.workingBFF valueForKey:@"bffGroup"];
-  //  watts.text=[NSString stringWithFormat:@"%d",(int)[[appDelegate.workingBFF valueForKey:@"bffWatts"]integerValue] ];
-//    volts.text=[NSString stringWithFormat:@"%d",(int)[[appDelegate.workingBFF valueForKey:@"bffVolts"]integerValue] ];
-//    galons.text=[NSString stringWithFormat:@"%d",(int)[[appDelegate.workingBFF valueForKey:@"bffGalons"]integerValue] ];
-//    kwh.text=[NSString stringWithFormat:@"%.3f",(float)[[appDelegate.workingBFF valueForKey:@"bffKwH"]floatValue] ];
-//    water.text=[NSString stringWithFormat:@"%.3f",(float)[[appDelegate.workingBFF valueForKey:@"bffWater"]floatValue] ];
     offline.on=[[appDelegate.workingBFF valueForKey:@"bffOffline"] boolValue];
     limit.on=[[appDelegate.workingBFF valueForKey:@"bffRelayTime"] boolValue];
     _opmode.text=offline.isOn?@"Offline Mode":@"Online Mode";
     transport.selectedSegmentIndex=[[appDelegate.workingBFF valueForKey:@"bffLimbo"] integerValue];
     _whichMeter.selectedSegmentIndex=[[appDelegate.workingBFF valueForKey:@"bffWatts"] integerValue];
-
-    //from byte with each bit defining a day of the week set the selected indices
-  /*  UILongPressGestureRecognizer *lpgr = [[UILongPressGestureRecognizer alloc]
-                                          initWithTarget:self action:@selector(handleLongPress:)];
-    lpgr.minimumPressDuration = 2.0; //seconds
-    lpgr.delegate = self;
-    [bjTable addGestureRecognizer:lpgr];
-   */
 
   }
 
@@ -491,14 +468,22 @@ static const CGFloat LANDSCAPE_KEYBOARD_HEIGHT = 162;
     NSString *emailURL=[email.text stringByAddingPercentEncodingWithAllowedCharacters:chars];
     NSString *lanswer;
 
-    mis=[NSString stringWithFormat:@"generalap?meter=%@&group=%@&watts=%ld&volts=%ld&galons=%ld&kwh=%.2f&email=%@&ap=%@&pass=%@",heatURL,groupURL,
-         watts.text.integerValue,volts.text.integerValue,galons.text.integerValue,kwh.text.floatValue,emailURL,ap,thepass];//multiple arguments
+    
+    NSDate *now = [NSDate date];
+    NSTimeInterval nowEpochSeconds = [now timeIntervalSince1970];
+    uint32_t este=(uint32_t)nowEpochSeconds;
+    NSInteger myzone=[[NSTimeZone localTimeZone]secondsFromGMT];
+    LogDebug(@"Now %lu Secnds zone %d result  %d",este,myzone,este+myzone);
+    este+=myzone;
+
+    mis=[NSString stringWithFormat:@"generalap?meter=%@&group=%@&watts=%ld&volts=%ld&galons=%ld&kwh=%.2f&email=%@&ap=%@&pass=%@&epoch=%d",heatURL,groupURL,
+         watts.text.integerValue,volts.text.integerValue,galons.text.integerValue,kwh.text.floatValue,emailURL,ap,thepass,este];//multiple arguments
     int reply=[comm lsender:mis andAnswer:&lanswer andTimeOut:1000.0 vcController:self];
     if(!reply)
     {
         //timeout is that it could not connect. Try another password
      //   [self showErrorMessage];
-        [self blurScreen];
+
         UIAlertController* alert = [UIAlertController alertControllerWithTitle:@"Did Not Connect to WiFi"
                                                                        message:@"Probably bad password. If it persists, reset your WiFi"
                                                                 preferredStyle:UIAlertControllerStyleAlert];

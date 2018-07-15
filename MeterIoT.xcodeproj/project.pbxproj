@@ -15,6 +15,7 @@
 		672F85F21D39A637007AF7CD /* DoughnutChartContainerView.m in Sources */ = {isa = PBXBuildFile; fileRef = 672F85F11D39A637007AF7CD /* DoughnutChartContainerView.m */; };
 		673ACEF11E4D30080098E7AC /* mqttUser.m in Sources */ = {isa = PBXBuildFile; fileRef = 673ACEF01E4D30080098E7AC /* mqttUser.m */; };
 		6747B11D1D402A6B00ECB87E /* btSimplePopUP.m in Sources */ = {isa = PBXBuildFile; fileRef = 6747B11C1D402A6B00ECB87E /* btSimplePopUP.m */; };
+		675C7C5020F7A36F00488487 /* TabBarViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 675C7C4F20F7A36F00488487 /* TabBarViewController.m */; };
 		676683051CDFFBB000E21B29 /* headerCell.m in Sources */ = {isa = PBXBuildFile; fileRef = 676683041CDFFBB000E21B29 /* headerCell.m */; };
 		676C1FD31C8BDA6E004128FC /* URBSegmentedControl.m in Sources */ = {isa = PBXBuildFile; fileRef = 676C1FD11C8BDA6E004128FC /* URBSegmentedControl.m */; };
 		676C6FE91CA5C60A009E6E04 /* TextFieldValidator.m in Sources */ = {isa = PBXBuildFile; fileRef = 676C6FE81CA5C60A009E6E04 /* TextFieldValidator.m */; };
@@ -30,6 +31,7 @@
 		678B4FB71E4C002800937301 /* framVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 678B4FB61E4C002800937301 /* framVC.m */; };
 		678B4FBA1E4C003800937301 /* infoVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 678B4FB91E4C003800937301 /* infoVC.m */; };
 		678B4FBD1E4C0A5300937301 /* resetVC.m in Sources */ = {isa = PBXBuildFile; fileRef = 678B4FBC1E4C0A5300937301 /* resetVC.m */; };
+		678E88B620F7003400F8FAD2 /* AMTumblrHud.m in Sources */ = {isa = PBXBuildFile; fileRef = 678E88B520F7003400F8FAD2 /* AMTumblrHud.m */; };
 		679089F71E44E6F000856C2E /* monthUseViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = 679089F61E44E6F000856C2E /* monthUseViewController.m */; };
 		67908A501E44EC0300856C2E /* NSCalendar+RSDFAdditions.m in Sources */ = {isa = PBXBuildFile; fileRef = 67908A401E44EC0300856C2E /* NSCalendar+RSDFAdditions.m */; };
 		67908A511E44EC0300856C2E /* RSDFDatePickerCollectionView.m in Sources */ = {isa = PBXBuildFile; fileRef = 67908A431E44EC0300856C2E /* RSDFDatePickerCollectionView.m */; };
@@ -174,6 +176,8 @@
 		673ACEF01E4D30080098E7AC /* mqttUser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = mqttUser.m; sourceTree = "<group>"; };
 		6747B11B1D402A6B00ECB87E /* btSimplePopUP.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = btSimplePopUP.h; sourceTree = "<group>"; };
 		6747B11C1D402A6B00ECB87E /* btSimplePopUP.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = btSimplePopUP.m; sourceTree = "<group>"; };
+		675C7C4E20F7A36F00488487 /* TabBarViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TabBarViewController.h; sourceTree = "<group>"; };
+		675C7C4F20F7A36F00488487 /* TabBarViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = TabBarViewController.m; sourceTree = "<group>"; };
 		676683031CDFFBB000E21B29 /* headerCell.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = headerCell.h; sourceTree = "<group>"; };
 		676683041CDFFBB000E21B29 /* headerCell.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = headerCell.m; sourceTree = "<group>"; };
 		676C1FD11C8BDA6E004128FC /* URBSegmentedControl.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = URBSegmentedControl.m; sourceTree = "<group>"; };
@@ -205,6 +209,8 @@
 		678B4FB91E4C003800937301 /* infoVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = infoVC.m; sourceTree = "<group>"; };
 		678B4FBB1E4C0A5300937301 /* resetVC.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = resetVC.h; sourceTree = "<group>"; };
 		678B4FBC1E4C0A5300937301 /* resetVC.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = resetVC.m; sourceTree = "<group>"; };
+		678E88B420F7003400F8FAD2 /* AMTumblrHud.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = AMTumblrHud.h; sourceTree = "<group>"; };
+		678E88B520F7003400F8FAD2 /* AMTumblrHud.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = AMTumblrHud.m; sourceTree = "<group>"; };
 		679089F51E44E6F000856C2E /* monthUseViewController.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = monthUseViewController.h; sourceTree = "<group>"; };
 		679089F61E44E6F000856C2E /* monthUseViewController.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = monthUseViewController.m; sourceTree = "<group>"; };
 		67908A3F1E44EC0300856C2E /* NSCalendar+RSDFAdditions.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = "NSCalendar+RSDFAdditions.h"; path = "RSDayFlow/NSCalendar+RSDFAdditions.h"; sourceTree = "<group>"; };
@@ -862,6 +868,8 @@
 		72EC05BC17E8DF3D00DCB9A3 /* MeterIoT */ = {
 			isa = PBXGroup;
 			children = (
+				678E88B420F7003400F8FAD2 /* AMTumblrHud.h */,
+				678E88B520F7003400F8FAD2 /* AMTumblrHud.m */,
 				72EC05C517E8DF3D00DCB9A3 /* AppDelegate.h */,
 				72EC05C617E8DF3D00DCB9A3 /* AppDelegate.m */,
 				678A9F041D3DDBFB00FA6031 /* blurLabel.h */,
@@ -874,9 +882,9 @@
 				678B4FB61E4C002800937301 /* framVC.m */,
 				678B4FB81E4C003800937301 /* infoVC.h */,
 				678B4FB91E4C003800937301 /* infoVC.m */,
-				67BD43A31D84E7B100582091 /* Main.storyboard */,
 				67B4379D20E427CB000386CA /* Log.h */,
 				67B4379E20E427CC000386CA /* Log.m */,
+				67BD43A31D84E7B100582091 /* Main.storyboard */,
 				671A10491D82633200F3F97F /* MainStoryboard_iPad.storyboard */,
 				679089F51E44E6F000856C2E /* monthUseViewController.h */,
 				679089F61E44E6F000856C2E /* monthUseViewController.m */,
@@ -890,6 +898,8 @@
 				6791328C1D67C4AF00D448A0 /* queueEntry.m */,
 				678B4FBB1E4C0A5300937301 /* resetVC.h */,
 				678B4FBC1E4C0A5300937301 /* resetVC.m */,
+				675C7C4E20F7A36F00488487 /* TabBarViewController.h */,
+				675C7C4F20F7A36F00488487 /* TabBarViewController.m */,
 				6785BA501D82EA52003297E0 /* tabc.h */,
 				6785BA511D82EA52003297E0 /* tabc.m */,
 				676C6FE71CA5C60A009E6E04 /* TextFieldValidator.h */,
@@ -1180,6 +1190,7 @@
 				672F85F21D39A637007AF7CD /* DoughnutChartContainerView.m in Sources */,
 				67E88B571E43F0EA00379702 /* DGActivityIndicatorBallScaleRippleAnimation.m in Sources */,
 				67C7A8641D6A14B100BC06C2 /* read_handle_client.c in Sources */,
+				675C7C5020F7A36F00488487 /* TabBarViewController.m in Sources */,
 				672F85EF1D39A5AE007AF7CD /* XYDoughnutChart.m in Sources */,
 				67908A551E44EC0300856C2E /* RSDFDatePickerMonthHeader.m in Sources */,
 				67C12A981D43384100F93984 /* CircularPickerView.m in Sources */,
@@ -1190,6 +1201,7 @@
 				677572CD1CBFD53F004197F8 /* httpVC.m in Sources */,
 				67E88B5F1E43F0EA00379702 /* DGActivityIndicatorFiveDotsAnimation.m in Sources */,
 				6774EC1E1CD45BCD001DC448 /* miColl.m in Sources */,
+				678E88B620F7003400F8FAD2 /* AMTumblrHud.m in Sources */,
 				67C7A8661D6A14B100BC06C2 /* read_handle.c in Sources */,
 				676C1FD31C8BDA6E004128FC /* URBSegmentedControl.m in Sources */,
 				67908A841E452E3E00856C2E /* JBLineChartPoint.m in Sources */,

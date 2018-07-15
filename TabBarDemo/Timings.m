@@ -11,7 +11,7 @@
 #import <arpa/inet.h>
 #import "DGActivityIndicatorView.h"
 
-#if 1 // set to 1 to enable logs
+#if 0 // set to 1 to enable logs
 #define LogDebug(frmt, ...) NSLog([frmt stringByAppendingString:@"[%s]{%d}"], ##__VA_ARGS__,__PRETTY_FUNCTION__,__LINE__);
 #else
 #define LogDebug(frmt, ...) {}
@@ -262,6 +262,12 @@ MQTTMessageHandler showStatus=^(MQTTMessage *message)
         theFirstTimer=nil;
     }
     
+    if(theStatusTimer)
+    {
+        [theStatusTimer invalidate];
+        theStatusTimer=nil;
+    }
+    
     NSString *blank=[NSString stringWithFormat:@"                  "];
     amps.text=blank;
     ampslabel.text=blank;
@@ -292,6 +298,7 @@ MQTTMessageHandler showStatus=^(MQTTMessage *message)
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
+    yo=self;
     appDelegate.rxIn=NO;
     wifi=CheckWiFi();
     NSNumber *passw=[[NSUserDefaults standardUserDefaults]objectForKey:@"password"];
@@ -338,7 +345,7 @@ MQTTMessageHandler showStatus=^(MQTTMessage *message)
     BOOL como;
     
     como=NO;
-    NSLog(@"Breaker Im %@",[_breaker imageForState:UIControlStateNormal]==onImage?@"ON":@"OFF");
+    LogDebug(@"Breaker Im %@",[_breaker imageForState:UIControlStateNormal]==onImage?@"ON":@"OFF");
     if([_breaker imageForState:UIControlStateNormal]==onImage)
         [_breaker setImage:offImage forState:UIControlStateNormal];
     else
